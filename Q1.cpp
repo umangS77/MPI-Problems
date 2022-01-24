@@ -5,7 +5,7 @@ using namespace std;
 
 
 
-int checkPrime(int lowerLimit, int upperLimit, int num)
+bool checkPrime(int lowerLimit, int upperLimit, int num)
 {
     if(num == 2)
         return 0;
@@ -39,7 +39,7 @@ int main( int argc, char **argv ) {
     // double start_time = MPI_Wtime();
     // int primelist [] = {3,5,7,11,13,17,19,}
     int root_rank = 0;
-    int n = 1000000000;
+    int n = 56165465;
     int sqRoot = sqrt(n);
     int lim = numprocs; // 10 = 11 - 1
     int val = sqRoot/lim; // number of values for 1 thread
@@ -61,13 +61,13 @@ int main( int argc, char **argv ) {
         if(rank == lim-1 || upperLimit > sqRoot)
             upperLimit = sqRoot;
 
-        int f=0;
+        bool f=0;
         if(lowerLimit <= upperLimit)
         f = checkPrime(lowerLimit, upperLimit, n);
 
         printf("rank = %d ------  LL = %d,  UL = %d,   f = %d\n", rank, lowerLimit, upperLimit, f);
 
-        MPI_Reduce(&f, &reduction_result, 1, MPI_INT, MPI_SUM, root_rank, MPI_COMM_WORLD);
+        MPI_Reduce(&f, &reduction_result, 1, MPI_INT, MPI_LOR, root_rank, MPI_COMM_WORLD);
 
 
         if(rank == root_rank)
