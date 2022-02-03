@@ -6,13 +6,20 @@
 
 using namespace std;
 
-bool checkPrime(int lowerLimit, int upperLimit, int num)
+int checkPrime(int lowerLimit, int upperLimit, int num)
 {
+    // printf("num = %d\n", num);
     if(num == 2)
         return 0;
 
     if(num<2 || num%2==0)
         return 1;
+
+    if(lowerLimit%2==0)
+        lowerLimit++;
+
+    // if(lowerLimit == 1)
+    //     lowerLimit = 2;
 
     for(int i=lowerLimit;i<=upperLimit;i+=2)
     {
@@ -27,6 +34,11 @@ int main( int argc, char **argv )
 {
 
     int rank, numprocs, n;
+    // if(rank == root_rank)
+    // {
+    fstream inp(argv[1]);
+    inp >> n;
+    // }
 
     // initiate MPI
     MPI_Init( &argc, &argv );
@@ -49,11 +61,6 @@ int main( int argc, char **argv )
 
     int root_rank = 0;
     
-    if(rank == root_rank)
-    {
-        fstream inp(argv[1]);
-        inp >> n;
-    }
 
     // int n = stoi(line);
     int sqRoot = sqrt(n);
@@ -82,21 +89,24 @@ int main( int argc, char **argv )
         int reduction_result = 0;
 
         int lowerLimit = val*rank;
+
         if(rank == 0)
             lowerLimit = 3;
         int upperLimit = lowerLimit + val-1;
         if(rank == lim-1 || upperLimit > sqRoot)
             upperLimit = sqRoot;
 
-        bool f=0;
+        int f=0;
+        if(lowerLimit == 1)
+            lowerLimit++;
         if(lowerLimit <= upperLimit)
         f = checkPrime(lowerLimit, upperLimit, n);
 
         // printf("rank = %d ------  LL = %d,  UL = %d,   f = %d\n", rank, lowerLimit, upperLimit, f);
 
-        MPI_Reduce(&f, &reduction_result, 1, MPI_INT, MPI_LOR, root_rank, MPI_COMM_WORLD);
+        MPI_Reduce(&f, &reduction_result, 1, MPI_INT, MPI_SUM, root_rank, MPI_COMM_WORLD);
 
-
+        // printf("%d\n", rank);
         if(rank == root_rank)
         {
             ofstream outp(argv[2]);

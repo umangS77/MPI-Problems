@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -27,9 +28,9 @@ int main( int argc, char **argv )
     // enter your code here
 
     int nodes, edges;
-    vector<int>indegree(MAX,0);
-    vector<vector<int>>graph(MAX, vector<int>(MAX, 0));
-    vector<vector<int>>edgeWeight(MAX, vector<int>(MAX, 0));
+    // int indegree[MAX] = {0};
+    int graph[MAX][MAX];
+    int edgeWeight[MAX][MAX];
 
     if(rank == 0) // root node
     {
@@ -42,8 +43,8 @@ int main( int argc, char **argv )
             inp>>u>>v>>w;
             graph[u][v] = graph[v][u] = 1;
             edgeWeight[u][v] = edgeWeight[v][u] = w;
-            indegree[u]++;
-            indegree[v]++;
+            // indegree[u]++;
+            // indegree[v]++;
         }
 
     }
@@ -57,10 +58,10 @@ int main( int argc, char **argv )
         MPI_Bcast(&(edgeWeight[i]), nodes + 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
     
-    vector<int>temp_ar1(4,0);
-    vector<int>output_ar1(4,0);
-    vector<int>temp_ar2(7,0);
-    vector<int>output_ar2(7,0);
+    int temp_ar1[4] = {0};
+    int output_ar1[4] = {0};
+    int temp_ar2[7] = {0};
+    int output_ar2[7] = {0};
     int remainder = (numprocs - rank == 1) ? (nodes%numprocs) : 0;
     int sizeSingleProcess = nodes / numprocs;
 
@@ -76,14 +77,13 @@ int main( int argc, char **argv )
             {
                 if(graph[i][j] == 1 && graph[i][k] == 1 && graph[j][k] == 1)
                 {
-                    if(edgeWeight[i][j] + edgeWeight[i][k] + edgeWeight[j][k] == 2)
-                    temp_ar1[2]++;
+                    temp_ar1[edgeWeight[i][j] + edgeWeight[i][k] + edgeWeight[j][k]]++;
                 }
             }
         }
         i++;
     }
-    MPI_Reduce(temp_ar1, output_ar1, 4, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&temp_ar1, &output_ar1, 4, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
     // END for clique size = 3
 
@@ -96,9 +96,9 @@ int main( int argc, char **argv )
     {
         for(int j=(i+1); j<(nodes+1); j++)
         {
-            for(int k=(j+1); (k<(nodes+1); k++)
+            for(int k=(j+1); k<(nodes+1); k++)
             {
-                for (int l=(k+1); l<(n+1); l++)
+                for (int l=(k+1); l<(nodes+1); l++)
                 {
                     if (graph[i][j] && graph[i][k] && graph[j][k] && graph[i][l] && graph[k][l] && graph[j][l])
                     {
@@ -109,7 +109,7 @@ int main( int argc, char **argv )
         }
         i++;
     }
-    MPI_Reduce(temp_ar2, output_ar2, 7, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&temp_ar2, &output_ar2, 7, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
     // END for clique size = 4
 
