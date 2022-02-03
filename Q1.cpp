@@ -31,8 +31,7 @@ int main( int argc, char **argv )
     // initiate MPI
     MPI_Init( &argc, &argv );
 
-    fstream inp(argv[1]);
-    inp >> n;
+    
 
     // get size of the current communicator
     MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
@@ -49,6 +48,13 @@ int main( int argc, char **argv )
 
 
     int root_rank = 0;
+    
+    if(rank == root_rank)
+    {
+        fstream inp(argv[1]);
+        inp >> n;
+    }
+
     // int n = stoi(line);
     int sqRoot = sqrt(n);
     int lim = numprocs; // 10 = 11 - 1
@@ -100,7 +106,6 @@ int main( int argc, char **argv )
             else
                 outp<<"YES";
 
-            // outputFile.close();
         }
     }
 
