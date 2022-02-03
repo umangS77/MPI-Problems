@@ -1,11 +1,10 @@
 #include <iostream>
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <fstream>
 #include <string>
+
 using namespace std;
-
-
 
 bool checkPrime(int lowerLimit, int upperLimit, int num)
 {
@@ -24,19 +23,16 @@ bool checkPrime(int lowerLimit, int upperLimit, int num)
     return 0;
 }
 
-int main( int argc, char **argv ) {
-    ifstream inputFile;
+int main( int argc, char **argv )
+{
 
-    inputFile.open("input.txt");
-    string line;
-    getline(inputFile, line);
-    inputFile.close();
-
-
-    int rank, numprocs;
+    int rank, numprocs, n;
 
     // initiate MPI
     MPI_Init( &argc, &argv );
+
+    fstream inp(argv[1]);
+    inp >> n;
 
     // get size of the current communicator
     MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
@@ -46,10 +42,14 @@ int main( int argc, char **argv ) {
 
     /*synchronize all processes*/
     MPI_Barrier( MPI_COMM_WORLD );
-    // double start_time = MPI_Wtime();
-    // int primelist [] = {3,5,7,11,13,17,19,}
+    double start_time = MPI_Wtime();
+
+
+    // enter your code here
+
+
     int root_rank = 0;
-    int n = stoi(line);
+    // int n = stoi(line);
     int sqRoot = sqrt(n);
     int lim = numprocs; // 10 = 11 - 1
     int val = sqRoot/lim; // number of values for 1 thread
@@ -57,47 +57,18 @@ int main( int argc, char **argv ) {
     
     if(val == 0)
     {
-        // int reduction_result = 0;
-
-        // int lowerLimit = rank+2;
-        // int upperLimit = rank+2;
-        // bool f=0;
-        // if(lowerLimit >= n)
-        // {
-        //     f = checkPrime(lowerLimit, upperLimit, n);
-        // }
-        // MPI_Reduce(&f, &reduction_result, 1, MPI_INT, MPI_LOR, root_rank, MPI_COMM_WORLD);
-        
-
-
-        ofstream outputFile;
-        outputFile.open("output.txt");
+        ofstream outp(argv[2]);
         if(n==2 || n==3 || n==5 || n==7 || n==11)
         {
-            outputFile<<"YES";
+            outp<<"YES";
         }
         else if(n==1 || n%2==0 || n%3==0 || n%5==0 || n%7==0 || n%11 == 0)
         {
-            outputFile<<"NO";
+            outp<<"NO";
         }
         else
-            outputFile<<"YES";
+            outp<<"YES";
 
-        outputFile.close();
-
-        // if(rank == root_rank)
-        // {
-            
-        //     // printf("result = %d\n", reduction_result);
-        //     if(reduction_result > 1)
-        //         outputFile<<"NO";
-        //     else
-        //         outputFile<<"YES";
-
-        //     outputFile.close();
-        // }
-
-        // }
     }
 
     else
@@ -122,48 +93,25 @@ int main( int argc, char **argv ) {
 
         if(rank == root_rank)
         {
-            ofstream outputFile;
-            outputFile.open("output.txt");
+            ofstream outp(argv[2]);
             // printf("result = %d\n", reduction_result);
             if(reduction_result > 0)
-                outputFile<<"NO";
+                outp<<"NO";
             else
-                outputFile<<"YES";
+                outp<<"YES";
 
-            outputFile.close();
+            // outputFile.close();
         }
     }
 
-    
-
-
-
-
-    
-    
-
-
-
-
-
-        
-
-    
-
-
-
-    
-
-    // enter your code here
-
     MPI_Barrier( MPI_COMM_WORLD );
-    // double end_time = MPI_Wtime() - start_time;
-    // double maxTime;
-    // // get max program run time for all processes
-    // MPI_Reduce( &end_time, &maxTime, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    // if ( rank == 0 ) {
-    //     cout<<"Total time (s): "<<maxTime<<"\n";
-    // }
+    double end_time = MPI_Wtime() - start_time;
+    double maxTime;
+    // get max program run time for all processes
+    MPI_Reduce( &end_time, &maxTime, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    if ( rank == 0 ) {
+        cout<<"Total time (s): "<<maxTime<<"\n";
+    }
 
     // shut down MPI and close
     MPI_Finalize();
